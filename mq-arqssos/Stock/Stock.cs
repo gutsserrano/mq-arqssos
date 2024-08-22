@@ -5,47 +5,66 @@ namespace mq_arqssos.Stock
     public class ProductStock
     {
         public List<Product> products = new List<Product>();
+        private MessageQueue _queue;
+
         public static ProductStock instance { get; private set; }
 
-        private ProductStock()
-        { 
+        private ProductStock(MessageQueue queue)
+        {
+            _queue = queue;
         }
 
-        public void Consume()
+        public async void Consume()
         {
             while (true)
             {
-                //MessageQueue.MessageEvent.WaitOne(); // Espera por uma nova mensagem
-
-                if (MessageQueue.TryDequeue(out Tuple<string, int> message))
+                if (_queue.TryDequeue(out Tuple<string, string, int> message))
                 {
-                    HandleProduct(message.Item1, message.Item2);
-                    var product = products.Find(p => p.Name.Equals($"{message.Item1}"));
-
-                    if (product != null)
-                    {
-                        Console.WriteLine($"Product: {product.Name} - quantity {product.Quantity}");
-                    }
+                    await HandleProduct(message.Item1, message.Item2, message.Item3);
                 }
-
-                //Thread.Sleep(100);
             }
         }
 
-        public void HandleProduct(string productName, int quantity)
+        public Task HandleProduct(string sellId, string productName, int quantity)
         {
+            var msg = "";
+
             if (products.Find(p => p.Name == productName) == null)
             {
-                products.Add(new Product(productName, quantity));
+                if (quantity >= 0)
+                {
+                    products.Add(new Product
+                    {
+                        Name = productName,
+                        Quantity = quantity
+                    });
+
+                    msg = $"\t*** Cadastro de produto: [{sellId}] Produto: {productName} Quantidade: {quantity}";
+                }
+                else
+                {
+                    msg = $"\t*** Venda [{sellId}] não pode ser efetuada - Produto não cadastrado";
+                }
             }
             else if (quantity > 0)
             {
                 AddQuantityInStock(productName, quantity);
+                msg = $"\t*** Reestoque: [{sellId}] Produto: {productName} Quantidade: {quantity}";
             }
             else
             {
-                RemoveQuantityInStock(productName, -quantity);
+                if (RemoveQuantityInStock(productName, -quantity))
+                {
+                    msg = $"\t*** Venda: [{sellId}] Produto: {productName} Quantidade: {-quantity}";
+                }
+                else
+                {
+                    msg = $"\t*** Venda [{sellId}] não pode ser efetuada - Falta de estoque";
+                }
             }
+            Console.WriteLine(msg);
+
+            return Task.CompletedTask;
         }
 
         public void AddQuantityInStock(String productName, int quantity)
@@ -53,18 +72,16 @@ namespace mq_arqssos.Stock
             products.Find(p => p.Name.Equals(productName))?.IncrementQuantity(quantity);
         }
 
-        public void RemoveQuantityInStock(String productName, int quantity)
+        public bool RemoveQuantityInStock(String productName, int quantity)
         {
-            products.Find(p => p.Name.Equals(productName))?.DecrementQuantity(quantity);
-
-            Tuple<String, int> tuple = new Tuple<String, int>(productName, quantity);
+            return products.First(p => p.Name.Equals(productName)).DecrementQuantity(quantity);
         }
 
-        public static ProductStock GetInstance()
+        public static ProductStock GetInstance(MessageQueue queue)
         {
             if (instance == null)
             {
-                instance = new ProductStock();
+                instance = new ProductStock(queue);
             }
 
             return instance;

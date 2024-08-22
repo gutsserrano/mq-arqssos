@@ -5,20 +5,20 @@
         public string Name { get; set; }
         public int Quantity { get; set; }
 
-        public Product(string name, int quantity)
-        {
-            Name = name;
-            Quantity = quantity;
-        }
-
         public void IncrementQuantity(int increment)
         {
             Quantity += increment;
         }
 
-        public void DecrementQuantity(int decrement)
+        public bool DecrementQuantity(int decrement)
         {
+            if (Quantity < decrement)
+            {
+                return false;
+            }
+
             Quantity -= decrement;
+            return true;
         }
     }
 }

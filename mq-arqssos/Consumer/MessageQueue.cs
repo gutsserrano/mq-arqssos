@@ -2,17 +2,16 @@
 
 namespace mq_arqssos.Consumer
 {
-    public static class MessageQueue
+    public class MessageQueue
     {
-        private static ConcurrentQueue<Tuple<string, int>> messageQueue = new ConcurrentQueue<Tuple<string, int>>();
-        public static AutoResetEvent MessageEvent = new AutoResetEvent(false);
+        private ConcurrentQueue<Tuple<string, string, int>> messageQueue = new ConcurrentQueue<Tuple<string, string, int>>();
 
-        public static void EnqueueMessage(string productName, int quantity)
+        public void EnqueueMessage(string sellId, string productName, int quantity)
         {
-            messageQueue.Enqueue(new Tuple<string, int>(productName, quantity));
+            messageQueue.Enqueue(new Tuple<string, string, int>(sellId, productName, quantity));
         }
 
-        public static bool TryDequeue(out Tuple<string, int> message)
+        public bool TryDequeue(out Tuple<string, string, int> message)
         {
             return messageQueue.TryDequeue(out message);
         }

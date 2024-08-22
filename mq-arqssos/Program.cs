@@ -1,4 +1,5 @@
 ﻿using mq_arqssos.Consumer;
+using mq_arqssos.Producer;
 using mq_arqssos.Stock;
 
 namespace mq_arqssos
@@ -7,34 +8,15 @@ namespace mq_arqssos
     {
         static void Main(string[] args)
         {
-            // Inicia a thread do produtor
-            Task.Run(() => Producer.Produce(1));
-            Task.Run(() => Producer.Produce(2));
-            Task.Run(() => Producer.Produce(3));
+            var messageQueue = new MessageQueue();
 
-            // Inicia a thread do consumidor
-            Task.Run(() => ProductStock.GetInstance().Consume());
+            Task.Run(() => new SellPoint(messageQueue, 111).ProduceMessage());
+            Task.Run(() => new SellPoint(messageQueue, 222).ProduceMessage());
+            Task.Run(() => new SellPoint(messageQueue, 333).ProduceMessage());
 
-            // Mantém o programa em execução
+            Task.Run(() => ProductStock.GetInstance(messageQueue).Consume());
+
             Console.ReadLine();
-        }
-    }
-
-    public static class Producer
-    {
-        public static void Produce(int thread)
-        {
-            var random = new Random();
-            for (int i = 0; i < 5; i++)
-            {
-                var value = random.Next(-10, 10);
-                MessageQueue.EnqueueMessage($"Item{i}", value);
-
-                Console.WriteLine($"Produced: Item{i} - {value}");
-                MessageQueue.MessageEvent.Set(); // Sinaliza que há uma nova mensagem
-                //Thread.Sleep(500); // Simula algum trabalho
-
-            }
         }
     }
 }
