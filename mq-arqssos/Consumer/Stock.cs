@@ -1,15 +1,15 @@
-﻿using mq_arqssos.Consumer;
+﻿using mq_arqssos.Queue;
 
-namespace mq_arqssos.Stock
+namespace mq_arqssos.Consumer
 {
-    public class ProductStock
+    public class Stock
     {
         public List<Product> products = new List<Product>();
         private MessageQueue _queue;
 
-        public static ProductStock instance { get; private set; }
+        public static Stock instance { get; private set; }
 
-        private ProductStock(MessageQueue queue)
+        private Stock(MessageQueue queue)
         {
             _queue = queue;
         }
@@ -77,11 +77,11 @@ namespace mq_arqssos.Stock
             return products.First(p => p.Name.Equals(productName)).DecrementQuantity(quantity);
         }
 
-        public static ProductStock GetInstance(MessageQueue queue)
+        public static Stock GetInstance(MessageQueue queue)
         {
             if (instance == null)
             {
-                instance = new ProductStock(queue);
+                instance = new Stock(queue);
             }
 
             return instance;

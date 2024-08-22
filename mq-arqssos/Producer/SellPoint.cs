@@ -1,4 +1,4 @@
-﻿using mq_arqssos.Consumer;
+﻿using mq_arqssos.Queue;
 
 namespace mq_arqssos.Producer
 {

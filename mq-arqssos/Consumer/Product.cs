@@ -1,4 +1,4 @@
-﻿namespace mq_arqssos.Stock
+﻿namespace mq_arqssos.Consumer
 {
     public class Product
     {

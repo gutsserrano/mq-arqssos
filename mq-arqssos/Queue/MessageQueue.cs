@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace mq_arqssos.Consumer
+namespace mq_arqssos.Queue
 {
     public class MessageQueue
     {
