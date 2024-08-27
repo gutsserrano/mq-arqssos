@@ -20,15 +20,15 @@ namespace mq_arqssos.Producer
             Random random = new Random();
 
             int i = 0;
-            while (i < 30)
+            while (i < 10)
             {
                 var productName = products[random.Next(0, products.Length)];
                 var quantity = random.Next(-10, 11);
 
-                _queue.EnqueueMessage($"Pid {_sellPointid} Msg {i}", productName, quantity);
+                Console.WriteLine($"[Pv {_sellPointid} Msg {i}] -> {productName} {quantity}");
+                _queue.EnqueueMessage($"Pv {_sellPointid} Msg {i}", productName, quantity);
 
-                Console.WriteLine($"---> [Pid {_sellPointid} Msg {i}] enviou: {productName} Quantidade: {quantity}");
-                Thread.Sleep(1000);
+                Thread.Sleep(0);
                 i++;
             }
         }

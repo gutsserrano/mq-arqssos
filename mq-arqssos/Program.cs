@@ -10,11 +10,18 @@ namespace mq_arqssos
         {
             var messageQueue = new MessageQueue();
 
-            Task.Run(() => new SellPoint(messageQueue, 111).ProduceMessage());
-            Task.Run(() => new SellPoint(messageQueue, 222).ProduceMessage());
-            Task.Run(() => new SellPoint(messageQueue, 333).ProduceMessage());
+            // Espera a execução de todos os pontos de venda apenas para que a saída seja mais organizada
 
+            Console.WriteLine("Mensagens produzidas:\n");
+            Task.WhenAll(
+                Task.Run(() => new SellPoint(messageQueue, 1).ProduceMessage()),
+                Task.Run(() => new SellPoint(messageQueue, 2).ProduceMessage()),
+                Task.Run(() => new SellPoint(messageQueue, 3).ProduceMessage())
+                ).Wait();
+
+            Console.WriteLine("\nConsumindo mensagens:\n");
             Task.Run(() => Stock.GetInstance(messageQueue).Consume());
+
 
             Console.ReadLine();
         }

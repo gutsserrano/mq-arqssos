@@ -20,6 +20,11 @@ namespace mq_arqssos.Consumer
             {
                 if (_queue.TryDequeue(out Tuple<string, string, int> message))
                 {
+                    if(message.Item1 == null && message.Item2 == null && message.Item3 == 0)
+                    {
+                        break;
+                    }
+
                     await HandleProduct(message.Item1, message.Item2, message.Item3);
                 }
             }
@@ -28,6 +33,8 @@ namespace mq_arqssos.Consumer
         public Task HandleProduct(string sellId, string productName, int quantity)
         {
             var msg = "";
+
+            var product = products.Find(p => p.Name == productName);
 
             if (products.Find(p => p.Name == productName) == null)
             {
@@ -39,27 +46,27 @@ namespace mq_arqssos.Consumer
                         Quantity = quantity
                     });
 
-                    msg = $"\t*** Cadastro de produto: [{sellId}] Produto: {productName} Quantidade: {quantity}";
+                    msg = $"[{sellId}] Cadastro de produto: {productName} +{quantity} | Total: {quantity}";
                 }
                 else
                 {
-                    msg = $"\t*** Venda [{sellId}] não pode ser efetuada - Produto não cadastrado";
+                    msg = $"[{sellId}] Venda não pode ser efetuada. {productName} não cadastrado(a)";
                 }
             }
             else if (quantity > 0)
             {
                 AddQuantityInStock(productName, quantity);
-                msg = $"\t*** Reestoque: [{sellId}] Produto: {productName} Quantidade: {quantity}";
+                msg = $"[{sellId}] Reestoque: {productName} +{quantity} | Total: {product.Quantity}";
             }
             else
             {
                 if (RemoveQuantityInStock(productName, -quantity))
                 {
-                    msg = $"\t*** Venda: [{sellId}] Produto: {productName} Quantidade: {-quantity}";
+                    msg = $"[{sellId}] Venda: {productName} {quantity} | Total: {product.Quantity}";
                 }
                 else
                 {
-                    msg = $"\t*** Venda [{sellId}] não pode ser efetuada - Falta de estoque";
+                    msg = $"[{sellId}] Venda não pode ser efetuada. {productName} {quantity} | Total: {product.Quantity}";
                 }
             }
             Console.WriteLine(msg);
