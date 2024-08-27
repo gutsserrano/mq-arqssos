@@ -20,11 +20,6 @@ namespace mq_arqssos.Consumer
             {
                 if (_queue.TryDequeue(out Tuple<string, string, int> message))
                 {
-                    if(message.Item1 == null && message.Item2 == null && message.Item3 == 0)
-                    {
-                        break;
-                    }
-
                     await HandleProduct(message.Item1, message.Item2, message.Item3);
                 }
             }
